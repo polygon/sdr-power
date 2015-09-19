@@ -109,7 +109,7 @@ double atofp(char *s)
     return atof(s);
 }
 
-int nearest_gain(rtlsdr_dev_t *dev, int target_gain)
+int rtlsdr_nearest_gain(rtlsdr_dev_t *dev, int target_gain)
 {
     int i, r, err1, err2, count, nearest;
     int* gains;
@@ -136,7 +136,7 @@ int nearest_gain(rtlsdr_dev_t *dev, int target_gain)
     return nearest;
 }
 
-int verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency)
+int rtlsdr_verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency)
 {
     int r;
     r = rtlsdr_set_center_freq(dev, frequency);
@@ -148,7 +148,7 @@ int verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency)
     return r;
 }
 
-int verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate)
+int rtlsdr_verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate)
 {
     int r;
     r = rtlsdr_set_sample_rate(dev, samp_rate);
@@ -160,7 +160,7 @@ int verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate)
     return r;
 }
 
-int verbose_direct_sampling(rtlsdr_dev_t *dev, int on)
+int rtlsdr_verbose_direct_sampling(rtlsdr_dev_t *dev, int on)
 {
     int r;
     r = rtlsdr_set_direct_sampling(dev, on);
@@ -177,7 +177,7 @@ int verbose_direct_sampling(rtlsdr_dev_t *dev, int on)
     return r;
 }
 
-int verbose_offset_tuning(rtlsdr_dev_t *dev)
+int rtlsdr_verbose_offset_tuning(rtlsdr_dev_t *dev)
 {
     int r;
     r = rtlsdr_set_offset_tuning(dev, 1);
@@ -189,7 +189,7 @@ int verbose_offset_tuning(rtlsdr_dev_t *dev)
     return r;
 }
 
-int verbose_auto_gain(rtlsdr_dev_t *dev)
+int rtlsdr_verbose_auto_gain(rtlsdr_dev_t *dev)
 {
     int r;
     r = rtlsdr_set_tuner_gain_mode(dev, 0);
@@ -201,7 +201,7 @@ int verbose_auto_gain(rtlsdr_dev_t *dev)
     return r;
 }
 
-int verbose_gain_set(rtlsdr_dev_t *dev, int gain)
+int rtlsdr_verbose_gain_set(rtlsdr_dev_t *dev, int gain)
 {
     int r;
     r = rtlsdr_set_tuner_gain_mode(dev, 1);
@@ -218,7 +218,7 @@ int verbose_gain_set(rtlsdr_dev_t *dev, int gain)
     return r;
 }
 
-int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error)
+int rtlsdr_verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error)
 {
     int r;
     if (ppm_error == 0) {
@@ -232,7 +232,7 @@ int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error)
     return r;
 }
 
-int verbose_reset_buffer(rtlsdr_dev_t *dev)
+int rtlsdr_verbose_reset_buffer(rtlsdr_dev_t *dev)
 {
     int r;
     r = rtlsdr_reset_buffer(dev);
@@ -241,7 +241,7 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev)
     return r;
 }
 
-int verbose_device_search(char *s)
+int rtlsdr_verbose_device_search(char *s)
 {
     int i, device_count, device, offset;
     char *s2;

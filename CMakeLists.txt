@@ -24,6 +24,6 @@ find_library(M_LIB m)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES sdr-power.c convenience.c backend.c backend.h backends/rtlsdr.c backends/rtlsdr.h)
+set(SOURCE_FILES sdr-power.c backends/rtlsdr_convenience.c backend.c backend.h backends/rtlsdr.c backends/rtlsdr.h)
 add_executable(sdr_power ${SOURCE_FILES})
 target_link_libraries(sdr_power ${RTLSDR_LIBRARY} ${LIBUSB_LIBRARIES} ${M_LIB})

@@ -64,8 +64,9 @@
 #include <libusb.h>
 
 #include "rtl-sdr.h"
-#include "convenience.h"
+#include "backends/rtlsdr_convenience.h"
 #include "backend.h"
+#include "usage.h"
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -83,6 +84,7 @@ int N_WAVE, LOG2_N_WAVE;
 int next_power;
 int16_t *fft_buf;
 int *window_coefs;
+int EFFECTIVE_MAXIMUM_RATE;
 
 struct tuning_state
 /* one per tuning range */
@@ -116,53 +118,7 @@ int peak_hold = 0;
 
 void usage(void)
 {
-    fprintf(stderr,
-            "rtl_power, a simple FFT logger for RTL2832 based DVB-T receivers\n\n"
-                    "Use:\trtl_power -f freq_range [-options] [filename]\n"
-                    "\t-f lower:upper:bin_size [Hz]\n"
-                    "\t (bin size is a maximum, smaller more convenient bins\n"
-                    "\t  will be used.  valid range 1Hz - 2.8MHz)\n"
-                    "\t[-i integration_interval (default: 10 seconds)]\n"
-                    "\t (buggy if a full sweep takes longer than the interval)\n"
-                    "\t[-1 enables single-shot mode (default: off)]\n"
-                    "\t[-e exit_timer (default: off/0)]\n"
-                    //"\t[-s avg/iir smoothing (default: avg)]\n"
-                    //"\t[-t threads (default: 1)]\n"
-                    "\t[-d device_index (default: 0)]\n"
-                    "\t[-g tuner_gain (default: automatic)]\n"
-                    "\t[-p ppm_error (default: 0)]\n"
-                    "\tfilename (a '-' dumps samples to stdout)\n"
-                    "\t (omitting the filename also uses stdout)\n"
-                    "\n"
-                    "Experimental options:\n"
-                    "\t[-w window (default: rectangle)]\n"
-                    "\t (hamming, blackman, blackman-harris, hann-poisson, bartlett, youssef)\n"
-                    // kaiser
-                    "\t[-c crop_percent (default: 0%%, recommended: 20%%-50%%)]\n"
-                    "\t (discards data at the edges, 100%% discards everything)\n"
-                    "\t (has no effect for bins larger than 1MHz)\n"
-                    "\t[-F fir_size (default: disabled)]\n"
-                    "\t (enables low-leakage downsample filter,\n"
-                    "\t  fir_size can be 0 or 9.  0 has bad roll off,\n"
-                    "\t  try with '-c 50%%')\n"
-                    "\t[-P enables peak hold (default: off)]\n"
-                    "\t[-D enable direct sampling (default: off)]\n"
-                    "\t[-O enable offset tuning (default: off)]\n"
-                    "\n"
-                    "CSV FFT output columns:\n"
-                    "\tdate, time, Hz low, Hz high, Hz step, samples, dbm, dbm, ...\n\n"
-                    "Examples:\n"
-                    "\trtl_power -f 88M:108M:125k fm_stations.csv\n"
-                    "\t (creates 160 bins across the FM band,\n"
-                    "\t  individual stations should be visible)\n"
-                    "\trtl_power -f 100M:1G:1M -i 5m -1 survey.csv\n"
-                    "\t (a five minute low res scan of nearly everything)\n"
-                    "\trtl_power -f ... -i 15m -1 log.csv\n"
-                    "\t (integrate for 15 minutes and exit afterwards)\n"
-                    "\trtl_power -f ... -e 1h | gzip > log.csv.gz\n"
-                    "\t (collect data for one hour and compress it on the fly)\n\n"
-                    "Convert CSV to a waterfall graphic with:\n"
-                    "\t http://kmkeen.com/tmp/heatmap.py.txt \n");
+    fprintf(stderr, usage_text);
     exit(1);
 }
 
@@ -449,7 +405,7 @@ void frequency_range(char *arg, double crop)
     for (i=1; i<1500; i++) {
         bw_seen = (upper - lower) / i;
         bw_used = (int)((double)(bw_seen) / (1.0 - crop));
-        if (bw_used > radio->MAXIMUM_RATE) {
+        if (bw_used > EFFECTIVE_MAXIMUM_RATE) {
             continue;}
         tune_count = i;
         break;
@@ -457,7 +413,7 @@ void frequency_range(char *arg, double crop)
     /* unless small bandwidth */
     if (bw_used < radio->MINIMUM_RATE) {
         tune_count = 1;
-        downsample = radio->MAXIMUM_RATE / bw_used;
+        downsample = EFFECTIVE_MAXIMUM_RATE / bw_used;
         bw_used = bw_used * downsample;
     }
     if (!boxcar && downsample > 1) {
@@ -533,7 +489,7 @@ void retune(int freq)
     radio->set_center_freq((uint32_t)freq);
     /* wait for settling and flush buffer */
     usleep(5000);
-    radio->read_sync(&dump, BUFFER_DUMP, &n_read);
+    radio->read_sync(dump, BUFFER_DUMP, &n_read);
     if (n_read != BUFFER_DUMP) {
         fprintf(stderr, "Error: bad retune.\n");}
 }
@@ -760,15 +716,10 @@ int main(int argc, char **argv)
     int i, length, r, opt, wb_mode = 0;
     int f_set = 0;
     int gain = AUTO_GAIN; // tenths of a dB
-    int dev_index = 0;
-    int dev_given = 0;
-    int ppm_error = 0;
     int interval = 10;
     int fft_threads = 1;
     int smoothing = 0;
     int single = 0;
-    int direct_sampling = 0;
-    int offset_tuning = 0;
     double crop = 0.0;
     char *freq_optarg;
     time_t next_tick;
@@ -778,16 +729,20 @@ int main(int argc, char **argv)
     struct tm *cal_time;
     double (*window_fn)(int, int) = rectangle;
     freq_optarg = "";
+    char* radio_optarg;
+    int r_set = 0;
+    int user_maxrate;
+    int m_set = 0;
 
-    while ((opt = getopt(argc, argv, "f:i:s:t:d:g:p:e:w:c:F:1PDOh")) != -1) {
+    while ((opt = getopt(argc, argv, "f:r:i:e:w:c:F:lP")) != -1) {
         switch (opt) {
             case 'f': // lower:upper:bin_size
                 freq_optarg = strdup(optarg);
                 f_set = 1;
                 break;
-            case 'd':
-                dev_index = verbose_device_search(optarg);
-                dev_given = 1;
+            case 'r':
+                radio_optarg = optarg;
+                r_set = 1;
                 break;
             case 'g':
                 gain = (int)(atof(optarg) * 10);
@@ -828,30 +783,39 @@ int main(int argc, char **argv)
             case 't':
                 fft_threads = atoi(optarg);
                 break;
-            case 'p':
-                ppm_error = atoi(optarg);
-                break;
             case '1':
                 single = 1;
                 break;
             case 'P':
                 peak_hold = 1;
                 break;
-            case 'D':
-                direct_sampling = 1;
-                break;
-            case 'O':
-                offset_tuning = 1;
-                break;
             case 'F':
                 boxcar = 0;
                 comp_fir_size = atoi(optarg);
                 break;
             case 'h':
+            case 'm':
+                user_maxrate = atoi(optarg);
+                m_set = 1;
+                break;
             default:
                 usage();
                 break;
         }
+    }
+
+    if (!r_set) {
+        fprintf(stderr, "No radio provided.\n");
+        exit(1);
+    }
+    radio = initialize_backend(radio_optarg);
+    if (m_set)
+    {
+        EFFECTIVE_MAXIMUM_RATE = (user_maxrate > radio->MAXIMUM_RATE) ? radio->MAXIMUM_RATE : user_maxrate;
+    }
+    else
+    {
+        EFFECTIVE_MAXIMUM_RATE = radio->MAXIMUM_RATE;
     }
 
     if (!f_set) {
@@ -880,19 +844,6 @@ int main(int argc, char **argv)
 
     fprintf(stderr, "Reporting every %i seconds\n", interval);
 
-    if (!dev_given) {
-        dev_index = verbose_device_search("0");
-    }
-
-    if (dev_index < 0) {
-        exit(1);
-    }
-
-    r = radio->open((uint32_t)dev_index);
-    if (r < 0) {
-        fprintf(stderr, "Failed to open rtlsdr device #%d.\n", dev_index);
-        exit(1);
-    }
 #ifndef _WIN32
     sigact.sa_handler = sighandler;
     sigemptyset(&sigact.sa_mask);
@@ -904,24 +855,6 @@ int main(int argc, char **argv)
 #else
     SetConsoleCtrlHandler( (PHANDLER_ROUTINE) sighandler, TRUE );
 #endif
-
-    if (direct_sampling) {
-        verbose_direct_sampling(dev, 1);
-    }
-
-    if (offset_tuning) {
-        verbose_offset_tuning(dev);
-    }
-
-    /* Set the tuner gain */
-    if (gain == AUTO_GAIN) {
-        verbose_auto_gain(dev);
-    } else {
-        gain = nearest_gain(dev, gain);
-        verbose_gain_set(dev, gain);
-    }
-
-    verbose_ppm_set(dev, ppm_error);
 
     if (strcmp(filename, "-") == 0) { /* Write log to stdout */
         file = stdout;
@@ -936,9 +869,6 @@ int main(int argc, char **argv)
             exit(1);
         }
     }
-
-    /* Reset endpoint before we start reading from it (mandatory) */
-    verbose_reset_buffer(dev);
 
     /* actually do stuff */
     radio->set_sample_rate((uint32_t)tunes[0].rate);

@@ -52,7 +52,7 @@ double atofp(char *s);
  * \return 0 on success
  */
 
-int nearest_gain(rtlsdr_dev_t *dev, int target_gain);
+int rtlsdr_nearest_gain(rtlsdr_dev_t *dev, int target_gain);
 
 /*!
  * Set device frequency and report status on stderr
@@ -62,7 +62,7 @@ int nearest_gain(rtlsdr_dev_t *dev, int target_gain);
  * \return 0 on success
  */
 
-int verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency);
+int rtlsdr_verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency);
 
 /*!
  * Set device sample rate and report status on stderr
@@ -72,7 +72,7 @@ int verbose_set_frequency(rtlsdr_dev_t *dev, uint32_t frequency);
  * \return 0 on success
  */
 
-int verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate);
+int rtlsdr_verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate);
 
 /*!
  * Enable or disable the direct sampling mode and report status on stderr
@@ -82,7 +82,7 @@ int verbose_set_sample_rate(rtlsdr_dev_t *dev, uint32_t samp_rate);
  * \return 0 on success
  */
 
-int verbose_direct_sampling(rtlsdr_dev_t *dev, int on);
+int rtlsdr_verbose_direct_sampling(rtlsdr_dev_t *dev, int on);
 
 /*!
  * Enable offset tuning and report status on stderr
@@ -91,7 +91,7 @@ int verbose_direct_sampling(rtlsdr_dev_t *dev, int on);
  * \return 0 on success
  */
 
-int verbose_offset_tuning(rtlsdr_dev_t *dev);
+int rtlsdr_verbose_offset_tuning(rtlsdr_dev_t *dev);
 
 /*!
  * Enable auto gain and report status on stderr
@@ -100,7 +100,7 @@ int verbose_offset_tuning(rtlsdr_dev_t *dev);
  * \return 0 on success
  */
 
-int verbose_auto_gain(rtlsdr_dev_t *dev);
+int rtlsdr_verbose_auto_gain(rtlsdr_dev_t *dev);
 
 /*!
  * Set tuner gain and report status on stderr
@@ -110,7 +110,7 @@ int verbose_auto_gain(rtlsdr_dev_t *dev);
  * \return 0 on success
  */
 
-int verbose_gain_set(rtlsdr_dev_t *dev, int gain);
+int rtlsdr_verbose_gain_set(rtlsdr_dev_t *dev, int gain);
 
 /*!
  * Set the frequency correction value for the device and report status on stderr.
@@ -120,7 +120,7 @@ int verbose_gain_set(rtlsdr_dev_t *dev, int gain);
  * \return 0 on success
  */
 
-int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error);
+int rtlsdr_verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error);
 
 /*!
  * Reset buffer
@@ -129,7 +129,7 @@ int verbose_ppm_set(rtlsdr_dev_t *dev, int ppm_error);
  * \return 0 on success
  */
 
-int verbose_reset_buffer(rtlsdr_dev_t *dev);
+int rtlsdr_verbose_reset_buffer(rtlsdr_dev_t *dev);
 
 /*!
  * Find the closest matching device.
@@ -138,5 +138,5 @@ int verbose_reset_buffer(rtlsdr_dev_t *dev);
  * \return dev_index int, -1 on error
  */
 
-int verbose_device_search(char *s);
+int rtlsdr_verbose_device_search(char *s);
 
