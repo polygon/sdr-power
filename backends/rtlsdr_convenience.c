@@ -15,99 +15,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* a collection of user friendly tools
- * todo: use strtol for more flexible int parsing
- * */
-
-#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#ifndef _WIN32
-#include <unistd.h>
-#else
-#include <windows.h>
-#include <fcntl.h>
-#include <io.h>
-#define _USE_MATH_DEFINES
-#endif
-
-#include <math.h>
-
+#include <string.h>
 #include "rtl-sdr.h"
-
-double atofs(char *s)
-/* standard suffixes */
-{
-    char last;
-    int len;
-    double suff = 1.0;
-    len = strlen(s);
-    last = s[len-1];
-    s[len-1] = '\0';
-    switch (last) {
-        case 'g':
-        case 'G':
-            suff *= 1e3;
-        case 'm':
-        case 'M':
-            suff *= 1e3;
-        case 'k':
-        case 'K':
-            suff *= 1e3;
-            suff *= atof(s);
-            s[len-1] = last;
-            return suff;
-    }
-    s[len-1] = last;
-    return atof(s);
-}
-
-double atoft(char *s)
-/* time suffixes, returns seconds */
-{
-    char last;
-    int len;
-    double suff = 1.0;
-    len = strlen(s);
-    last = s[len-1];
-    s[len-1] = '\0';
-    switch (last) {
-        case 'h':
-        case 'H':
-            suff *= 60;
-        case 'm':
-        case 'M':
-            suff *= 60;
-        case 's':
-        case 'S':
-            suff *= atof(s);
-            s[len-1] = last;
-            return suff;
-    }
-    s[len-1] = last;
-    return atof(s);
-}
-
-double atofp(char *s)
-/* percent suffixes */
-{
-    char last;
-    int len;
-    double suff = 1.0;
-    len = strlen(s);
-    last = s[len-1];
-    s[len-1] = '\0';
-    switch (last) {
-        case '%':
-            suff *= 0.01;
-            suff *= atof(s);
-            s[len-1] = last;
-            return suff;
-    }
-    s[len-1] = last;
-    return atof(s);
-}
 
 int rtlsdr_nearest_gain(rtlsdr_dev_t *dev, int target_gain)
 {
@@ -247,58 +158,70 @@ int rtlsdr_verbose_device_search(char *s)
     char *s2;
     char vendor[256], product[256], serial[256];
     device_count = rtlsdr_get_device_count();
-    if (!device_count) {
+    if (!device_count)
+    {
         fprintf(stderr, "No supported devices found.\n");
         return -1;
     }
     fprintf(stderr, "Found %d device(s):\n", device_count);
-    for (i = 0; i < device_count; i++) {
+    for (i = 0; i < device_count; i++)
+    {
         rtlsdr_get_device_usb_strings(i, vendor, product, serial);
         fprintf(stderr, "  %d:  %s, %s, SN: %s\n", i, vendor, product, serial);
     }
     fprintf(stderr, "\n");
     /* does string look like raw id number */
-    device = (int)strtol(s, &s2, 0);
-    if (s2[0] == '\0' && device >= 0 && device < device_count) {
+    device = (int) strtol(s, &s2, 0);
+    if (s2[0] == '\0' && device >= 0 && device < device_count)
+    {
         fprintf(stderr, "Using device %d: %s\n",
-                device, rtlsdr_get_device_name((uint32_t)device));
+                device, rtlsdr_get_device_name((uint32_t) device));
         return device;
     }
     /* does string exact match a serial */
-    for (i = 0; i < device_count; i++) {
+    for (i = 0; i < device_count; i++)
+    {
         rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-        if (strcmp(s, serial) != 0) {
-            continue;}
+        if (strcmp(s, serial) != 0)
+        {
+            continue;
+        }
         device = i;
         fprintf(stderr, "Using device %d: %s\n",
-                device, rtlsdr_get_device_name((uint32_t)device));
+                device, rtlsdr_get_device_name((uint32_t) device));
         return device;
     }
     /* does string prefix match a serial */
-    for (i = 0; i < device_count; i++) {
+    for (i = 0; i < device_count; i++)
+    {
         rtlsdr_get_device_usb_strings(i, vendor, product, serial);
-        if (strncmp(s, serial, strlen(s)) != 0) {
-            continue;}
+        if (strncmp(s, serial, strlen(s)) != 0)
+        {
+            continue;
+        }
         device = i;
         fprintf(stderr, "Using device %d: %s\n",
-                device, rtlsdr_get_device_name((uint32_t)device));
+                device, rtlsdr_get_device_name((uint32_t) device));
         return device;
     }
     /* does string suffix match a serial */
-    for (i = 0; i < device_count; i++) {
+    for (i = 0; i < device_count; i++)
+    {
         rtlsdr_get_device_usb_strings(i, vendor, product, serial);
         offset = strlen(serial) - strlen(s);
-        if (offset < 0) {
-            continue;}
-        if (strncmp(s, serial+offset, strlen(s)) != 0) {
-            continue;}
+        if (offset < 0)
+        {
+            continue;
+        }
+        if (strncmp(s, serial + offset, strlen(s)) != 0)
+        {
+            continue;
+        }
         device = i;
         fprintf(stderr, "Using device %d: %s\n",
-                device, rtlsdr_get_device_name((uint32_t)device));
+                device, rtlsdr_get_device_name((uint32_t) device));
         return device;
     }
     fprintf(stderr, "No matching devices found.\n");
     return -1;
 }
-
-// vim: tabstop=8:softtabstop=8:shiftwidth=8:noexpandtab
