@@ -66,6 +66,7 @@
 #include "backends/rtlsdr_convenience.h"
 #include "backend.h"
 #include "usage.h"
+#include "conversions.h"
 
 #define MAX(x, y) (((x) > (y)) ? (x) : (y))
 
@@ -209,6 +210,8 @@ inline int16_t FIX_MPY(int16_t a, int16_t b)
     b = c & 0x01;
     return (c >> 1) + b;
 }
+
+int16_t FIX_MPY(int16_t a, int16_t b);
 
 int fix_fft(int16_t iq[], int m)
 /* interleaved iq[], 0 <= n < 2**m, changes in place */
