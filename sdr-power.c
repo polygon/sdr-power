@@ -736,7 +736,7 @@ int main(int argc, char **argv)
     int user_maxrate;
     int m_set = 0;
 
-    while ((opt = getopt(argc, argv, "f:r:i:e:w:c:F:lP")) != -1) {
+    while ((opt = getopt(argc, argv, "f:r:i:e:w:c:F:m:s:t:lP")) != -1) {
         switch (opt) {
             case 'f': // lower:upper:bin_size
                 freq_optarg = strdup(optarg);
@@ -745,9 +745,6 @@ int main(int argc, char **argv)
             case 'r':
                 radio_optarg = optarg;
                 r_set = 1;
-                break;
-            case 'g':
-                gain = (int)(atof(optarg) * 10);
                 break;
             case 'c':
                 crop = atofp(optarg);

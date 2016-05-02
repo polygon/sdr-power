@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "backend.h"
 #include "backends/rtlsdr.h"
+#include "backends/hackrf.h"
 #include "config.h"
 
 enum radios
@@ -37,6 +38,13 @@ struct backend* initialize_backend(char *opts)
 #else
         fprintf(stderr, "rtlsdr backend not built\n");
         exit(1);
+#endif
+    case HACKRF:
+#ifdef HACKRF_ENABLED
+	return hackrf_initialize_backend(opts);
+#else
+	fprintf(stderr, "hackrf backend not built\n");
+	exit(1);
 #endif
     default:
         fprintf(stderr, "Unsupported radio\n");

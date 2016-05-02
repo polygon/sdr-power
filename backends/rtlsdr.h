@@ -3,6 +3,6 @@
 
 #include "../backend.h"
 
-struct backend* rtlsdr_initialize_backend(char* opts);
+struct backend * rtlsdr_initialize_backend(char *opts);
 
 #endif //SDR_POWER_RTLSDR_H

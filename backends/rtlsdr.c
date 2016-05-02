@@ -45,16 +45,16 @@ const struct backend backend_rtlsdr = {
 };
 
 // Backend configuration
-char* idx;
-int idx_set = 0;
-int gain;
-int gain_set = 0;
-int ppm;
-int ppm_set = 0;
-int dsampling_set = 0;
-int otune_set = 0;
+static char* idx;
+static int idx_set = 0;
+static int gain;
+static int gain_set = 0;
+static int ppm;
+static int ppm_set = 0;
+static int dsampling_set = 0;
+static int otune_set = 0;
 
-enum options
+static enum options
 {
     INDEX = 0,
     GAIN,
@@ -64,7 +64,7 @@ enum options
     THE_END
 };
 
-char *options_list[] =
+static char *options_list[] =
         {
                 [INDEX] = "idx",
                 [GAIN] = "gain",
@@ -74,7 +74,7 @@ char *options_list[] =
                 [THE_END] = NULL
         };
 
-void parse_opts(char* opts)
+void rtlsdr_parse_opts(char* opts)
 {
     char* value;
     while (*opts != '\0')
@@ -112,10 +112,10 @@ void parse_opts(char* opts)
     }
 }
 
-struct backend *rtlsdr_initialize_backend(char *opts)
+struct backend * rtlsdr_initialize_backend(char *opts)
 {
     int device;
-    parse_opts(opts);
+    rtlsdr_parse_opts(opts);
 
     if (idx_set)
     {
@@ -158,4 +158,5 @@ struct backend *rtlsdr_initialize_backend(char *opts)
     }
 
     rtlsdr_verbose_reset_buffer(dev);
+    return &backend_rtlsdr;
 }
