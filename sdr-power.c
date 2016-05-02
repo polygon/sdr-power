@@ -62,8 +62,6 @@
 #include <math.h>
 #include <pthread.h>
 
-#include "rtl-sdr.h"
-#include "backends/rtlsdr_convenience.h"
 #include "backend.h"
 #include "usage.h"
 #include "conversions.h"

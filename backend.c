@@ -2,8 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "backend.h"
+
+#ifdef RTLSDR_ENABLED
 #include "backends/rtlsdr.h"
+#endif
+
+#ifdef HACKRF_ENABLED
 #include "backends/hackrf.h"
+#endif
+
 #include "config.h"
 
 enum radios

@@ -3,7 +3,7 @@
 //
 
 //#include <gif_lib.h>
-#include <libhackrf/hackrf.h>
+#include <hackrf.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
