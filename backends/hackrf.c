@@ -15,7 +15,7 @@
 
 #define RX_BUFFER_SIZE 1048576
 
-static uint32_t last_center_freq = 0;
+static uint64_t last_center_freq = 0;
 static hackrf_device *dev = NULL;
 static pthread_mutex_t lock;
 static ring_buffer* rb;
@@ -43,12 +43,12 @@ int read_sync_hackrf(uint8_t *buf, int len, int *n_read)
     return 0;
 }
 
-uint32_t get_center_freq_hackrf()
+uint64_t get_center_freq_hackrf()
 {
     return last_center_freq;
 }
 
-int set_center_freq_hackrf(uint32_t freq)
+int set_center_freq_hackrf(uint64_t freq)
 {
     //fprintf(stderr, "Retune to %i Hz\n", freq);	
     last_center_freq = freq;

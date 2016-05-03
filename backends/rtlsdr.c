@@ -13,12 +13,12 @@ int read_sync_rtlsdr(uint8_t *buf, int len, int *n_read)
     return rtlsdr_read_sync(dev, buf, len, n_read);
 }
 
-uint32_t get_center_freq_rtlsdr()
+uint64_t get_center_freq_rtlsdr()
 {
     return rtlsdr_get_center_freq(dev);
 }
 
-int set_center_freq_rtlsdr(uint32_t freq)
+int set_center_freq_rtlsdr(uint64_t freq)
 {
     return rtlsdr_set_center_freq(dev, freq);
 }

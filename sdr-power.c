@@ -383,8 +383,8 @@ void frequency_range(char *arg, double crop)
 // do we want the fewest ranges (easy) or the fewest bins (harder)?
 {
     char *start, *stop, *step;
-    int i, j, max_size, bw_used, bw_seen, bin_e, buf_len;
-    int64_t lower, upper;
+    int i, j, max_size, bin_e, buf_len;
+    int64_t lower, upper, bw_used, bw_seen;
     int downsample, downsample_passes;
     double bin_size;
     struct tuning_state *ts;
@@ -483,11 +483,11 @@ void frequency_range(char *arg, double crop)
     fprintf(stderr, "Buffer size: %i bytes (%0.2fms)\n", buf_len, 1000 * 0.5 * (float)buf_len / (float)bw_used);
 }
 
-void retune(int freq)
+void retune(uint64_t freq)
 {
     uint8_t dump[BUFFER_DUMP];
     int n_read;
-    radio->set_center_freq((uint32_t)freq);
+    radio->set_center_freq(freq);
     /* wait for settling and flush buffer */
     usleep(5000);
     radio->read_sync(dump, BUFFER_DUMP, &n_read);

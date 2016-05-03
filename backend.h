@@ -6,8 +6,8 @@
 struct backend
 {
     int (*read_sync)(uint8_t *buf, int len, int *n_read);
-    uint32_t (*get_center_freq)();
-    int (*set_center_freq)(uint32_t freq);
+    uint64_t (*get_center_freq)();
+    int (*set_center_freq)(uint64_t freq);
     int (*set_sample_rate)(uint32_t rate);
     int (*close)();
 
