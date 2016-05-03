@@ -87,7 +87,7 @@ int EFFECTIVE_MAXIMUM_RATE;
 struct tuning_state
 /* one per tuning range */
 {
-    int freq;
+    int64_t freq;
     int rate;
     int bin_e;
     long *avg;  /* length == 2^bin_e */
@@ -383,7 +383,8 @@ void frequency_range(char *arg, double crop)
 // do we want the fewest ranges (easy) or the fewest bins (harder)?
 {
     char *start, *stop, *step;
-    int i, j, upper, lower, max_size, bw_seen, bw_used, bin_e, buf_len;
+    int i, j, max_size, bw_used, bw_seen, bin_e, buf_len;
+    int64_t lower, upper;
     int downsample, downsample_passes;
     double bin_size;
     struct tuning_state *ts;
@@ -393,8 +394,8 @@ void frequency_range(char *arg, double crop)
     stop[-1] = '\0';
     step = strchr(stop, ':') + 1;
     step[-1] = '\0';
-    lower = (int)atofs(start);
-    upper = (int)atofs(stop);
+    lower = (int64_t)atofs(start);
+    upper = (int64_t)atofs(stop);
     max_size = (int)atofs(step);
     stop[-1] = ':';
     step[-1] = ':';
@@ -584,7 +585,8 @@ long real_conj(int16_t real, int16_t imag)
 
 void scanner(void)
 {
-    int i, j, j2, f, n_read, offset, bin_e, bin_len, buf_len, ds, ds_p;
+    int i, j, j2, n_read, offset, bin_e, bin_len, buf_len, ds, ds_p;
+    int64_t f;
     int32_t w;
     struct tuning_state *ts;
     bin_e = tunes[0].bin_e;
@@ -683,7 +685,7 @@ void csv_dbm(struct tuning_state *ts)
     /* Hz low, Hz high, Hz step, samples, dbm, dbm, ... */
     bin_count = (int)((double)len * (1.0 - ts->crop));
     bw2 = (int)(((double)ts->rate * (double)bin_count) / (len * 2 * ds));
-    fprintf(file, "%i, %i, %.2f, %i, ", ts->freq - bw2, ts->freq + bw2,
+    fprintf(file, "%lld, %lld, %.2f, %i, ", ts->freq - bw2, ts->freq + bw2,
             (double)ts->rate / (double)(len*ds), ts->samples);
     // something seems off with the dbm math
     i1 = 0 + (int)((double)len * ts->crop * 0.5);
