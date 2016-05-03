@@ -405,7 +405,7 @@ void frequency_range(char *arg, double crop)
     // todo, replace loop with algebra
     for (i=1; i<1500; i++) {
         bw_seen = (upper - lower) / i;
-        bw_used = (int)((double)(bw_seen) / (1.0 - crop));
+        bw_used = (int64_t)((double)(bw_seen) / (1.0 - crop));
         if (bw_used > EFFECTIVE_MAXIMUM_RATE) {
             continue;}
         tune_count = i;
