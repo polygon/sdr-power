@@ -1,1 +1,5 @@
 config.h
+.idea
+.kdev4
+sdr-power.kdev4
+build
