@@ -170,7 +170,7 @@ int hackrf_rx_callback(hackrf_transfer* transfer)
 struct backend *hackrf_initialize_backend(char *opts)
 {
     hackrf_parse_opts(opts);
-    rb = rb_create(RX_BUFFER_SIZE);
+    rb = rb_create_i8(RX_BUFFER_SIZE);
     
     if (pthread_mutex_init(&lock, NULL) != 0)
     {

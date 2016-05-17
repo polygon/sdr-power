@@ -24,17 +24,20 @@
 typedef struct
 {
     size_t size;
-    int8_t* buffer;
+    void* buffer;
+    size_t elem_size;
     size_t read_idx;
     size_t write_idx;
     uint8_t full;
 } ring_buffer;
 
-ring_buffer* rb_create(size_t size);
+ring_buffer* rb_create(size_t size, size_t elem_size);
+ring_buffer* rb_create_i8(size_t size);
+ring_buffer* rb_create_i16(size_t size);
 void rb_free(ring_buffer* rb);
 void rb_reset(ring_buffer* rb);
-size_t rb_write(ring_buffer* rb, int8_t* buffer, size_t len);
-size_t rb_read(ring_buffer* rb, int8_t* buffer, size_t len);
+size_t rb_write(ring_buffer* rb, void* buffer, size_t len);
+size_t rb_read(ring_buffer* rb, void* buffer, size_t len);
 uint8_t rb_can_read(ring_buffer* rb);
 
 #endif //SDR_POWER_RINGBUFFER_H

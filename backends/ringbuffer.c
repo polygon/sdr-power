@@ -20,13 +20,23 @@
 #include <string.h>
 #include "ringbuffer.h"
 
-ring_buffer* rb_create(size_t size)
+ring_buffer* rb_create(size_t size, size_t elem_size)
 {
     ring_buffer* rb = malloc(sizeof(ring_buffer));
-    rb->buffer = malloc(size);
+    rb->buffer = malloc(size * elem_size);
     rb->size = size;
     rb_reset(rb);
     return rb;
+}
+
+ring_buffer* rb_create_i8(size_t size)
+{
+    return rb_create(size, 1);
+}
+
+ring_buffer* rb_create_i16(size_t size)
+{
+    return rb_create(size, 2);
 }
 
 void rb_free(ring_buffer* rb)
@@ -42,7 +52,7 @@ void rb_reset(ring_buffer* rb)
     rb->full = 0;
 }
 
-size_t rb_write(ring_buffer* rb, int8_t* buffer, size_t len)
+size_t rb_write(ring_buffer* rb, void* buffer, size_t elems)
 {
     size_t written = 0;
     if (rb->full)
@@ -53,36 +63,36 @@ size_t rb_write(ring_buffer* rb, int8_t* buffer, size_t len)
     {
 	// Write towards end of buffer
 	size_t space = rb->size - rb->write_idx;
-	if (space <= len)
+	if (space <= elems)
 	{
-	    memcpy(&rb->buffer[rb->write_idx], buffer, space);
+	    memcpy(rb->buffer + rb->write_idx * rb->elem_size, buffer, space * rb->elem_size);
 	    written = space;
 	    rb->write_idx = 0;
 	}
 	else
 	{
-	    memcpy(&rb->buffer[rb->write_idx], buffer, len);
-	    rb->write_idx += len;
-	    written = len;
+	    memcpy(rb->buffer + rb->write_idx * rb->elem_size, buffer, elems * rb->elem_size);
+	    rb->write_idx += elems;
+	    written = elems;
 	}
     }
     
-    if ((rb->write_idx < rb->read_idx) && (written < len))
+    if ((rb->write_idx < rb->read_idx) && (written < elems))
     {
 	// Write towards read_idx
-	size_t remaining = len - written;
+	size_t remaining = elems - written;
 	size_t space = rb->read_idx - rb->write_idx;
 	if (space > 0)
 	{
 	    if (space <= remaining)
 	    {
-		memcpy(&rb->buffer[rb->write_idx], &buffer[written], space);
+		memcpy(rb->buffer + rb->write_idx * rb->elem_size, buffer + written * rb->elem_size, space * rb->elem_size);
 		written += space;
 		rb->write_idx += space;
 	    }
 	    else
 	    {
-		memcpy(&rb->buffer[rb->write_idx], &buffer[written], remaining);
+		memcpy(rb->buffer + rb->write_idx * rb->elem_size, buffer + written * rb->elem_size, remaining * rb->elem_size);
 		rb->write_idx += remaining;
 		written += remaining;
 	    }
@@ -95,47 +105,47 @@ size_t rb_write(ring_buffer* rb, int8_t* buffer, size_t len)
     return written;
 }
 
-size_t rb_read(ring_buffer* rb, int8_t* buffer, size_t len)
+size_t rb_read(ring_buffer* rb, void* buffer, size_t elems)
 {
     size_t read = 0;
     
     if ((rb->write_idx == rb->read_idx) && (!rb->full))
       return 0;
-    if (len == 0)
+    if (elems == 0)
       return 0;
     
     if (rb->read_idx >= rb->write_idx)
     {
 	// Read towards buffer end
 	size_t space = rb->size - rb->read_idx;
-	if (space <= len)
+	if (space <= elems)
 	{		
-	    memcpy(buffer, &rb->buffer[rb->read_idx], space);
+	    memcpy(buffer, rb->buffer + rb->read_idx * rb->elem_size, space * rb->elem_size);
 	    read = space;
 	    rb->read_idx = 0;
 	}
 	else
 	{
-	    memcpy(buffer, &rb->buffer[rb->read_idx], len);
-	    read = len;
-	    rb->read_idx += len;
+	    memcpy(buffer, rb->buffer + rb->read_idx * rb->elem_size, elems * rb->elem_size);
+	    read = elems;
+	    rb->read_idx += elems;
 	}
     }
     
-    if ((rb->read_idx < rb->write_idx) && (read < len))
+    if ((rb->read_idx < rb->write_idx) && (read < elems))
     {
 	// Read towards write_ptr
-	size_t remaining = len - read;
+	size_t remaining = elems - read;
 	size_t space = rb->write_idx - rb->read_idx;
 	if (space <= remaining)
 	{
-	    memcpy(&buffer[read], &rb->buffer[rb->read_idx], space);
+	    memcpy(buffer + read * rb->elem_size, rb->buffer + rb->read_idx * rb->elem_size, space * rb->elem_size);
 	    read += space;
 	    rb->read_idx += space;
 	}
 	else
 	{
-	    memcpy(&buffer[read], &rb->buffer[rb->read_idx], remaining);
+	    memcpy(buffer + read * rb->elem_size, rb->buffer + rb->read_idx * rb->elem_size, remaining * rb->elem_size);
 	    read += remaining;
 	    rb->read_idx += remaining;
 	}
