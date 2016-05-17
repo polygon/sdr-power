@@ -58,7 +58,8 @@ const struct backend backend_rtlsdr = {
         .set_sample_rate = set_sample_rate_rtlsdr,
         .close = close_rtlsdr,
         .MINIMUM_RATE = 1000000,
-        .MAXIMUM_RATE = 2800000
+        .MAXIMUM_RATE = 2800000,
+	.RADIO_TYPE = VARIABLE_SAMPLING_FREQUENCY
 };
 
 // Backend configuration

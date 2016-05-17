@@ -20,6 +20,12 @@
 
 #include <stdint.h>
 
+enum radio_type
+{
+    VARIABLE_SAMPLING_FREQUENCY = 0,
+    FIXED_SAMPLING_FREQUENCY
+};
+
 struct backend
 {
     int (*read_sync)(uint8_t *buf, int len, int *n_read);
@@ -28,8 +34,15 @@ struct backend
     int (*set_sample_rate)(uint32_t rate);
     int (*close)();
 
+    enum radio_type RADIO_TYPE;
+    
+    // Used for VARIABLE_SAMPLING_FREQUENCY radios
     uint32_t MINIMUM_RATE;
     uint32_t MAXIMUM_RATE;
+    
+    // Used for FIXED_SAMPLING_FREQUENCY radios
+    uint32_t* SAMPLING_RATES;
+    uint32_t NUM_SAMPLING_RATES;
 };
 
 struct backend* initialize_backend(char* opts);

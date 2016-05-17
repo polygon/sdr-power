@@ -28,6 +28,9 @@
 #endif
 
 #include "backends/dummy.h"
+#ifdef AIRSPY_ENABLED
+#include "backends/airspy.h"
+#endif
 
 #include "config.h"
 
@@ -37,6 +40,7 @@ enum radios
     BLADERF,
     HACKRF,
     DUMMY,
+    AIRSPY,
     THE_END
 };
 
@@ -46,6 +50,7 @@ char *radio_list[] =
     [BLADERF] = "bladerf",
     [HACKRF] = "hackrf",
     [DUMMY] = "dummy",
+    [AIRSPY] = "airspy",
     [THE_END] = NULL
 };
 
@@ -75,6 +80,13 @@ struct backend* initialize_backend(char *opts)
 #endif
     case DUMMY:
 	return dummy_initialize_backend(opts);
+    case AIRSPY:
+#ifdef AIRSPY_ENABLED
+	return airspy_initialize_backend(opts);
+#else
+	fprintf(stderr, "airspy backend not built\n");
+	exit(1);
+#endif
     default:
         fprintf(stderr, "Unsupported radio\n");
         exit(1);
