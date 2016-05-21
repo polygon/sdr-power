@@ -829,6 +829,7 @@ int main(int argc, char **argv)
     }
 
     frequency_range(freq_optarg, crop);
+    free(freq_optarg);
 
     if (tune_count == 0) {
         usage();}

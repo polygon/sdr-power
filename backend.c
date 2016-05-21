@@ -27,6 +27,8 @@
 #include "backends/hackrf.h"
 #endif
 
+#include "backends/dummy.h"
+
 #include "config.h"
 
 enum radios
@@ -34,6 +36,7 @@ enum radios
     RTLSDR = 0,
     BLADERF,
     HACKRF,
+    DUMMY,
     THE_END
 };
 
@@ -42,6 +45,7 @@ char *radio_list[] =
     [RTLSDR] = "rtlsdr",
     [BLADERF] = "bladerf",
     [HACKRF] = "hackrf",
+    [DUMMY] = "dummy",
     [THE_END] = NULL
 };
 
@@ -69,6 +73,8 @@ struct backend* initialize_backend(char *opts)
 	fprintf(stderr, "hackrf backend not built\n");
 	exit(1);
 #endif
+    case DUMMY:
+	return dummy_initialize_backend(opts);
     default:
         fprintf(stderr, "Unsupported radio\n");
         exit(1);

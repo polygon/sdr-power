@@ -54,7 +54,7 @@ else ()
 endif ()
 
 if (NOT HACKRF_ENABLED AND NOT BLADERF_ENABLED AND NOT RTLSDR_ENABLED)
-    message(FATAL_ERROR "No radio backends available, aborting")
+    message(WARNING "No radio backends available, only dummy backends usable")
 endif()
 
 CONFIGURE_FILE( ${CMAKE_SOURCE_DIR}/config.h.in ${CMAKE_SOURCE_DIR}/config.h )
@@ -76,6 +76,6 @@ find_library(M_LIB m)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-set(SOURCE_FILES ${BACKEND_SOURCES} sdr-power.c backend.c backend.h backends/hackrf.c backends/ringbuffer.c conversions.c conversions.h)
+set(SOURCE_FILES ${BACKEND_SOURCES} sdr-power.c backend.c backend.h backends/hackrf.c backends/ringbuffer.c conversions.c conversions.h backends/dummy.h backends/dummy.c)
 add_executable(sdr_power ${SOURCE_FILES})
 target_link_libraries(sdr_power ${BACKEND_LIBRARIES} ${M_LIB})
