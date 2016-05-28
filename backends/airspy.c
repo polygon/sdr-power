@@ -76,7 +76,7 @@ int set_center_freq_airspy(uint64_t freq)
 
 int set_sample_rate_airspy(uint32_t rate)
 {
-    int status = airspy_set_samplerate(dev, rate);
+    int status = airspy_set_samplerate(dev, 0);
     //status |= airspy_set_baseband_filter_bandwidth(dev, hackrf_compute_baseband_filter_bw(rate));
     if (status == 0)
     {

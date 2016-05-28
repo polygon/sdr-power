@@ -4,5 +4,6 @@
 #cmakedefine RTLSDR_ENABLED
 #cmakedefine HACKRF_ENABLED
 #cmakedefine BLADERF_ENABLED
+#cmakedefine AIRSPY_ENABLED
 
 #endif //SDR_POWER_CONFIG_H
