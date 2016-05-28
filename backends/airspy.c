@@ -102,8 +102,8 @@ const struct backend backend_airspy = {
         .set_center_freq = set_center_freq_airspy,
         .set_sample_rate = set_sample_rate_airspy,
         .close = close_airspy,
-        .MINIMUM_RATE = 2000000,
-        .MAXIMUM_RATE = 20000000
+        .SAMPLERATE = 10000000,
+        .RADIO_TYPE = FIXED_SAMPLERATE
 };
 
 // Backend configuration

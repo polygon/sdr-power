@@ -22,8 +22,8 @@
 
 enum radio_type
 {
-    VARIABLE_SAMPLING_FREQUENCY = 0,
-    FIXED_SAMPLING_FREQUENCY
+    VARIABLE_SAMPLERATE = 0,
+    FIXED_SAMPLERATE
 };
 
 struct backend
@@ -41,8 +41,7 @@ struct backend
     uint32_t MAXIMUM_RATE;
     
     // Used for FIXED_SAMPLING_FREQUENCY radios
-    uint32_t* SAMPLING_RATES;
-    uint32_t NUM_SAMPLING_RATES;
+    uint32_t SAMPLERATE;
 };
 
 struct backend* initialize_backend(char* opts);

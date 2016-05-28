@@ -385,7 +385,7 @@ void frequency_range(char *arg, double crop)
 {
     char *start, *stop, *step;
     int i, j, max_size, bin_e, buf_len;
-    int64_t lower, upper, bw_used, bw_seen;
+    int64_t lower, upper, bw_used, bw_seen, offset;
     int downsample, downsample_passes;
     double bin_size;
     struct tuning_state *ts;
@@ -402,42 +402,90 @@ void frequency_range(char *arg, double crop)
     step[-1] = ':';
     downsample = 1;
     downsample_passes = 0;
-    /* evenly sized ranges, as close to radio->MAXIMUM_RATE as possible */
-    // todo, replace loop with algebra
-    for (i=1; i<1500; i++) {
-        bw_seen = (upper - lower) / i;
-        bw_used = (int64_t)((double)(bw_seen) / (1.0 - crop));
-        if (bw_used > EFFECTIVE_MAXIMUM_RATE) {
-            continue;}
-        tune_count = i;
-        break;
+    if (radio->RADIO_TYPE == VARIABLE_SAMPLERATE)
+    {
+	/* evenly sized ranges, as close to radio->MAXIMUM_RATE as possible */
+	// todo, replace loop with algebra
+	for (i=1; i<1500; i++) {
+	    bw_seen = (upper - lower) / i;
+	    bw_used = (int64_t)((double)(bw_seen) / (1.0 - crop));
+	    if (bw_used > EFFECTIVE_MAXIMUM_RATE) {
+		continue;}
+	    tune_count = i;
+	    break;
+	}
+	/* unless small bandwidth */
+	if (bw_used < radio->MINIMUM_RATE) {
+	    tune_count = 1;
+	    downsample = EFFECTIVE_MAXIMUM_RATE / bw_used;
+	    bw_used = bw_used * downsample;
+	}
+	if (!boxcar && downsample > 1) {
+	    downsample_passes = (int)log2(downsample);
+	    downsample = 1 << downsample_passes;
+	    bw_used = (int)((double)(bw_seen * downsample) / (1.0 - crop));
+	}
+	/* number of bins is power-of-two, bin size is under limit */
+	// todo, replace loop with log2
+	for (i=1; i<=21; i++) {
+	    bin_e = i;
+	    bin_size = (double)bw_used / (double)((1<<i) * downsample);
+	    if (bin_size <= (double)max_size) {
+		break;}
+	}
+	/* unless giant bins */
+	if (max_size >= radio->MINIMUM_RATE) {
+	    bw_seen = max_size;
+	    bw_used = max_size;
+	    tune_count = (upper - lower) / bw_seen;
+	    bin_e = 0;
+	    crop = 0;
+	}
+	offset = bw_used / 2;
     }
-    /* unless small bandwidth */
-    if (bw_used < radio->MINIMUM_RATE) {
-        tune_count = 1;
-        downsample = EFFECTIVE_MAXIMUM_RATE / bw_used;
-        bw_used = bw_used * downsample;
-    }
-    if (!boxcar && downsample > 1) {
-        downsample_passes = (int)log2(downsample);
-        downsample = 1 << downsample_passes;
-        bw_used = (int)((double)(bw_seen * downsample) / (1.0 - crop));
-    }
-    /* number of bins is power-of-two, bin size is under limit */
-    // todo, replace loop with log2
-    for (i=1; i<=21; i++) {
-        bin_e = i;
-        bin_size = (double)bw_used / (double)((1<<i) * downsample);
-        if (bin_size <= (double)max_size) {
-            break;}
-    }
-    /* unless giant bins */
-    if (max_size >= radio->MINIMUM_RATE) {
-        bw_seen = max_size;
-        bw_used = max_size;
-        tune_count = (upper - lower) / bw_seen;
-        bin_e = 0;
-        crop = 0;
+    else // radio->RADIO_TYPE == FIXED_SAMPLERATE
+    {
+	// Bandwidths are fixed
+	bw_seen = radio->SAMPLERATE;
+	bw_used = (int64_t)((double)(bw_seen) / (1.0 - crop));
+	
+	// Smallest tune_count such that (upper - lower) * (1-crop) / tune_count < bw_used
+	// Changing that equation to tune_count > (upper - lower) * (1-crop) / bw_used
+	// Giving the closest integer tune_count
+	tune_count = (int)ceil( ((double)(upper-lower)) * (1.0 - crop) / ((double)bw_used) );
+	offset = ((upper - lower) - (tune_count - 1) * bw_used) / 2;
+	
+	/* unless small bandwidth */
+	if ((upper-lower) < radio->SAMPLERATE) {
+	    tune_count = 1;
+	    downsample = radio->SAMPLERATE / (upper-lower);
+	    bw_used = bw_used * downsample;
+	}
+	if (!boxcar && downsample > 1) {
+	    downsample_passes = (int)log2(downsample);
+	    downsample = 1 << downsample_passes;
+	    bw_used = (int)((double)(bw_seen * downsample) / (1.0 - crop));
+	}
+
+	/* number of bins is power-of-two, bin size is under limit */
+	// todo, replace loop with log2
+	for (i=1; i<=21; i++) {
+	    bin_e = i;
+	    bin_size = (double)bw_used / (double)((1<<i) * downsample);
+	    if (bin_size <= (double)max_size) {
+		break;}
+	}
+	
+	// Giant bins
+	if (max_size >= radio->SAMPLERATE) {
+	    bw_seen = radio->SAMPLERATE;
+	    bw_used = radio->SAMPLERATE;
+	    bin_e = 0;
+	    crop = 0;
+	    tune_count = (upper - lower) / bw_seen;
+	    offset = ((upper - lower) % bw_seen) / 2;
+	}
+	    
     }
     if (tune_count > MAX_TUNES) {
         fprintf(stderr, "Error: bandwidth too wide.\n");
@@ -450,7 +498,7 @@ void frequency_range(char *arg, double crop)
     /* build the array */
     for (i=0; i<tune_count; i++) {
         ts = &tunes[i];
-        ts->freq = lower + i*bw_seen + bw_seen/2;
+        ts->freq = lower + i*bw_seen + offset;
         ts->rate = bw_used;
         ts->bin_e = bin_e;
         ts->samples = 0;

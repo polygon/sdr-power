@@ -104,7 +104,8 @@ const struct backend backend_hackrf = {
         .set_sample_rate = set_sample_rate_hackrf,
         .close = close_hackrf,
         .MINIMUM_RATE = 2000000,
-        .MAXIMUM_RATE = 20000000
+        .MAXIMUM_RATE = 20000000,
+	.RADIO_TYPE = VARIABLE_SAMPLERATE
 };
 
 // Backend configuration
