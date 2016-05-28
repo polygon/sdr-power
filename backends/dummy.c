@@ -115,6 +115,7 @@ static enum options
     MIN_RATE = 0,
     MAX_RATE = 1,
     FILE_MODE = 2,
+    SAMPLERATE = 3,
     THE_END
 };
 
@@ -123,6 +124,7 @@ static char *options_list[] =
                 [MIN_RATE] = "min_rate",
 		[MAX_RATE] = "max_rate",
 		[FILE_MODE] = "file",
+		[SAMPLERATE] = "samplerate",
                 [THE_END] = NULL
         };
 
@@ -141,6 +143,13 @@ void dummy_parse_opts(char* opts)
 		if (value != NULL)
 		    backend_dummy.MAXIMUM_RATE = atoi(value);
 		break;
+	    case SAMPLERATE:
+		if (value != NULL) {
+		    backend_dummy.SAMPLERATE = atoi(value);
+		    backend_dummy.RADIO_TYPE = FIXED_SAMPLERATE;
+		}
+		break;
+		 
 	    case FILE_MODE:
 		if (value != NULL)
 		{

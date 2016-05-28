@@ -521,6 +521,7 @@ void frequency_range(char *arg, double crop)
         ts->buf_len = buf_len;
     }
     /* report */
+    fprintf(stderr, "Frequency offset: %iHz\n", offset);
     fprintf(stderr, "Number of frequency hops: %i\n", tune_count);
     fprintf(stderr, "Dongle bandwidth: %iHz\n", bw_used);
     fprintf(stderr, "Downsampling by: %ix\n", downsample);
