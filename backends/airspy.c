@@ -88,11 +88,11 @@ int set_sample_rate_airspy(uint32_t rate)
 }
 
 int close_airspy()
-{   pthread_mutex_lock(&lock);
+{   
     airspy_stop_rx(dev);
     airspy_close(dev);
     airspy_exit();
-    pthread_mutex_unlock(&lock);
+    return 0;
 }
 
 // Backend definition

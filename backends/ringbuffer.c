@@ -25,6 +25,7 @@ ring_buffer* rb_create(size_t size, size_t elem_size)
     ring_buffer* rb = malloc(sizeof(ring_buffer));
     rb->buffer = malloc(size * elem_size);
     rb->size = size;
+    rb->elem_size = elem_size;
     rb_reset(rb);
     return rb;
 }
