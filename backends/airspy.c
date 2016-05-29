@@ -52,6 +52,7 @@ int read_sync_airspy(uint8_t *buf, int len, int *n_read)
     }
     *n_read = (int)read;
     pthread_mutex_unlock(&lock);
+    free(read_buf);
     return 0;
 }
 
