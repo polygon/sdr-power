@@ -79,3 +79,5 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 set(SOURCE_FILES ${BACKEND_SOURCES} sdr-power.c backend.c backend.h backends/hackrf.c backends/ringbuffer.c conversions.c conversions.h backends/dummy.h backends/dummy.c)
 add_executable(sdr_power ${SOURCE_FILES})
 target_link_libraries(sdr_power ${BACKEND_LIBRARIES} ${M_LIB})
+install(TARGETS sdr_power DESTINATION bin)
+
